@@ -1,25 +1,52 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.Windows;
+using System.Windows.Threading;
+
+using CommunityToolkit.Mvvm.Messaging;
+
 using MaterialDesignThemes.Wpf;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Windows;
-using System.Windows.Threading;
+
+using PhotoBooth.Audio;
+using PhotoBooth.Images;
 
 namespace PhotoBooth;
 
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IRecipient<ShowPhotoBoothMessage>
 {
+    private Func<PhotoBoothWindow> PhotoBoothWindowFactory { get; }
+
+    public App(Func<PhotoBoothWindow> photoBoothWindowFactory, IMessenger messenger)
+    {
+        messenger.RegisterAll(this);
+        PhotoBoothWindowFactory = photoBoothWindowFactory;
+    }
+
+    void IRecipient<ShowPhotoBoothMessage>.Receive(ShowPhotoBoothMessage message)
+    {
+        if (Windows.OfType<PhotoBoothWindow>().FirstOrDefault() is { } existingWindow)
+        {
+            existingWindow.Activate();
+        }
+        else
+        {
+            PhotoBoothWindow window = PhotoBoothWindowFactory();
+            window.Show();
+        }
+    }
+
     [STAThread]
     public static void Main(string[] args)
     {
         using IHost host = CreateHostBuilder(args).Build();
         host.Start();
 
-        App app = new();
+        App app = host.Services.GetRequiredService<App>();
         app.InitializeComponent();
         app.MainWindow = host.Services.GetRequiredService<MainWindow>();
         app.MainWindow.Visibility = Visibility.Visible;
@@ -32,8 +59,16 @@ public partial class App : Application
             => configurationBuilder.AddUserSecrets(typeof(App).Assembly))
         .ConfigureServices((hostContext, services) =>
         {
+            services.AddSingleton<App>();
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainWindowViewModel>();
+
+            services.AddSingleton<Func<PhotoBoothWindow>>(provider => () => provider.GetRequiredService<PhotoBoothWindow>());
+            services.AddTransient<PhotoBoothWindow>();
+            services.AddTransient<PhotoBoothViewModel>();
+
+            services.AddSingleton<IImageService, ImageService>();
+            services.AddSingleton<IAudioPlayer, AudioPlayer>();
 
             services.AddSingleton<WeakReferenceMessenger>();
             services.AddSingleton<IMessenger, WeakReferenceMessenger>(provider => provider.GetRequiredService<WeakReferenceMessenger>());

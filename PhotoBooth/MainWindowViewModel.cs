@@ -2,54 +2,25 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
-using OpenCvSharp;
-using OpenCvSharp.WpfExtensions;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace PhotoBooth;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    private IMessenger Messenger { get; }
+
     [ObservableProperty]
     private WriteableBitmap? _image;
     
-    public MainWindowViewModel()
+    public MainWindowViewModel(IMessenger messenger)
     {
+        Messenger = messenger;
     }
 
-    //This is using the source generators from CommunityToolkit.Mvvm to generate a RelayCommand
-    //See: https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/generators/relaycommand
-    //and: https://learn.microsoft.com/windows/communitytoolkit/mvvm/relaycommand
-    [RelayCommand(IncludeCancelCommand = true)]
-    private async Task StartCamera(CancellationToken token)
+    [RelayCommand]
+    public void Start()
     {
-        try
-        {
-            using VideoCapture capture = VideoCapture.FromCamera(1);
-            capture.FrameWidth = 1920;
-            capture.FrameHeight = 1080;
-            using Mat image = new();
-            while (!token.IsCancellationRequested)
-            {
-                capture.Read(image);
-                if (image.Empty())
-                    break;
-
-                if (Image is null)
-                {
-                    Image = image.ToWriteableBitmap();
-                }
-                else
-                {
-                    WriteableBitmapConverter.ToWriteableBitmap(image, Image);
-                }
-
-                await Task.Delay(10, token);
-            }
-        }
-        catch(Exception e)
-        {
-
-        }
+        Messenger.Send(new ShowPhotoBoothMessage());
     }
 }

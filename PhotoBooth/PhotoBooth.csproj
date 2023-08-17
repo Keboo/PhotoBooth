@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -29,7 +29,17 @@
 
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
+
     <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup Label="Audio">
+    <None Remove="*.wav" />
+    <EmbeddedResource Include="*.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Audio\camera.wav" />
   </ItemGroup>
 
   <ItemGroup>
