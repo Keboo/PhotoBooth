@@ -19,9 +19,9 @@ namespace PhotoBooth;
 /// </summary>
 public partial class App : Application, IRecipient<ShowPhotoBoothMessage>
 {
-    private Func<PhotoBoothWindow> PhotoBoothWindowFactory { get; }
+    private Func<PhotoBoothOptions, PhotoBoothWindow> PhotoBoothWindowFactory { get; }
 
-    public App(Func<PhotoBoothWindow> photoBoothWindowFactory, IMessenger messenger)
+    public App(Func<PhotoBoothOptions, PhotoBoothWindow> photoBoothWindowFactory, IMessenger messenger)
     {
         messenger.RegisterAll(this);
         PhotoBoothWindowFactory = photoBoothWindowFactory;
@@ -35,7 +35,7 @@ public partial class App : Application, IRecipient<ShowPhotoBoothMessage>
         }
         else
         {
-            PhotoBoothWindow window = PhotoBoothWindowFactory();
+            PhotoBoothWindow window = PhotoBoothWindowFactory(message.Options);
             window.Show();
         }
     }
@@ -63,9 +63,17 @@ public partial class App : Application, IRecipient<ShowPhotoBoothMessage>
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainWindowViewModel>();
 
-            services.AddSingleton<Func<PhotoBoothWindow>>(provider => () => provider.GetRequiredService<PhotoBoothWindow>());
+            services.AddSingleton<Func<PhotoBoothOptions, PhotoBoothWindow>>(provider => (options) => 
+            {
+                PhotoBoothViewModel vm = new(options,
+                    provider.GetRequiredService<IImageService>(),
+                    provider.GetRequiredService<IAudioPlayer>());
+
+                return new PhotoBoothWindow(vm);
+            });
             services.AddTransient<PhotoBoothWindow>();
             services.AddTransient<PhotoBoothViewModel>();
+            services.AddSingleton<PhotoBoothOptions>();
 
             services.AddSingleton<IImageService, ImageService>();
             services.AddSingleton<IAudioPlayer, AudioPlayer>();

@@ -1,4 +1,5 @@
 ﻿using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,28 +14,39 @@ public partial class MainWindowViewModel : ObservableObject
     private IMessenger Messenger { get; }
 
     [ObservableProperty]
-    private WriteableBitmap? _image;
+    private WriteableBitmap? _previewImage;
 
     [ObservableProperty]
     private int _cameraIndex;
 
     private Camera _camera;
 
+    private readonly Timer _timer;
+
     partial void OnCameraIndexChanged(int value)
     {
-        _camera?.Dispose();
-        _camera = new(value);
+        //_camera?.Dispose();
+        //_camera = new(value);
     }
 
     public MainWindowViewModel(IMessenger messenger)
     {
         Messenger = messenger;
-        _camera = new(0);
+        //_camera = new(CameraIndex);
+        //_timer = new(OnTimerTick, null, 0, Timeout.Infinite);
+    }
+
+    private void OnTimerTick(object? _)
+    {
+        //_timer.Change(Timeout.Infinite, Timeout.Infinite);
+        //PreviewImage = _camera?.GetImage(PreviewImage);
+        //_timer.Change(1_000, Timeout.Infinite);
     }
 
     [RelayCommand]
     public void Start()
     {
-        Messenger.Send(new ShowPhotoBoothMessage());
+        PhotoBoothOptions options = new(CameraIndex);
+        Messenger.Send(new ShowPhotoBoothMessage(options));
     }
 }

@@ -15,6 +15,9 @@
     <KeyBinding Command="{x:Null}" Gesture="Escape" />
     <KeyBinding Command="{Binding StartCameraCommand}" Gesture="Enter" />
     <KeyBinding Command="{Binding TakePictureCommand}" Gesture="Space" />
+    <!-- NB Need to set modifiers so Ctrl keys trigger the command -->
+    <KeyBinding Command="{Binding TakePictureCommand}" Modifiers="Ctrl" Key="LeftCtrl" />
+    <KeyBinding Command="{Binding TakePictureCommand}" Modifiers="Ctrl" Key="RightCtrl" />
   </Window.InputBindings>
   <Image Source="{Binding Image}" Stretch="UniformToFill" />
 </Window>

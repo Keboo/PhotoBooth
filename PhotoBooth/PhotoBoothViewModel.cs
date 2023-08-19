@@ -19,11 +19,16 @@ public partial class PhotoBoothViewModel : ObservableObject
 
     private int _takePicture;
 
+    private PhotoBoothOptions Options { get; }
     private IImageService ImageService { get; }
     private IAudioPlayer AudioPlayer { get; }
 
-    public PhotoBoothViewModel(IImageService imageService, IAudioPlayer audioPlayer)
+    public PhotoBoothViewModel(
+        PhotoBoothOptions options,
+        IImageService imageService,
+        IAudioPlayer audioPlayer)
     {
+        Options = options;
         ImageService = imageService;
         AudioPlayer = audioPlayer;
     }
@@ -39,7 +44,7 @@ public partial class PhotoBoothViewModel : ObservableObject
     { 
         try
         {
-            using Camera camera = new(1);
+            using Camera camera = new(Options.CameraIndex);
             while (!token.IsCancellationRequested)
             {
                 Image = camera.GetImage(Image);

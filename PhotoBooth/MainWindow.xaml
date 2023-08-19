@@ -28,6 +28,7 @@
     </Menu>
 
     <GroupBox
+      Grid.Row="1"
       MinWidth="500"
       HorizontalAlignment="Center"
       Header="Camera Settings">
@@ -38,9 +39,11 @@
           Text="{Binding CameraIndex}" />
 
         <Image
+          Margin="0,10"
+          HorizontalAlignment="Left"
           Height="200"
           Source="{Binding PreviewImage}"
-          Stretch="UniformToFill" />
+          Stretch="Uniform" />
       </StackPanel>
     </GroupBox>
 

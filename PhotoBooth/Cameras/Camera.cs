@@ -1,7 +1,10 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System.Windows;
+using System.Windows.Media.Imaging;
 
 using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
+
+using Size = OpenCvSharp.Size;
 
 namespace PhotoBooth.Cameras;
 
@@ -25,23 +28,34 @@ public sealed class Camera : IDisposable
     }
 
     public int Index { get; }
-
     public Size Resolution { get; set; } = new(1920, 1080);
 
     public WriteableBitmap? GetImage(WriteableBitmap? image)
     {
-        CaptureDevice.Value.Read(_cameraImage);
-        if (_cameraImage.Empty())
-            return image;
+        if (_disposedValue) return null;
+        try
+        {
+            CaptureDevice.Value.Read(_cameraImage);
+            if (_cameraImage.Empty())
+                return image;
 
-        if (image is null)
-        {
-            return _cameraImage.ToWriteableBitmap();
+            if (image is null)
+            {
+                return Application.Current.Dispatcher.Invoke(() => _cameraImage.ToWriteableBitmap());
+            }
+            else
+            {
+                image.Dispatcher.Invoke(() =>
+                {
+                    WriteableBitmapConverter.ToWriteableBitmap(_cameraImage, image);
+                });
+                return image;
+            }
         }
-        else
+        catch(ObjectDisposedException) when (_disposedValue)
         {
-            WriteableBitmapConverter.ToWriteableBitmap(_cameraImage, image);
-            return image;
+            //Suppress as Read will hang
+            return null;
         }
     }
 
