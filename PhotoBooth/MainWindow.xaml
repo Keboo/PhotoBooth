@@ -4,6 +4,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:local="clr-namespace:PhotoBooth"
+  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   Title="Demo App"
   Width="800"
@@ -15,6 +16,7 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
@@ -25,8 +27,25 @@
       </MenuItem>
     </Menu>
 
+    <GroupBox
+      MinWidth="500"
+      HorizontalAlignment="Center"
+      Header="Camera Settings">
+      <StackPanel>
+        <TextBox
+          materialDesign:HintAssist.Hint="Camera Index"
+          Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+          Text="{Binding CameraIndex}" />
+
+        <Image
+          Height="200"
+          Source="{Binding PreviewImage}"
+          Stretch="UniformToFill" />
+      </StackPanel>
+    </GroupBox>
+
     <Button
-      Grid.Row="1"
+      Grid.Row="2"
       HorizontalAlignment="Center"
       VerticalAlignment="Center"
       Command="{Binding StartCommand}"

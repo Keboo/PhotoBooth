@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
+using PhotoBooth.Cameras;
+
 namespace PhotoBooth;
 
 public partial class MainWindowViewModel : ObservableObject
@@ -12,10 +14,22 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private WriteableBitmap? _image;
-    
+
+    [ObservableProperty]
+    private int _cameraIndex;
+
+    private Camera _camera;
+
+    partial void OnCameraIndexChanged(int value)
+    {
+        _camera?.Dispose();
+        _camera = new(value);
+    }
+
     public MainWindowViewModel(IMessenger messenger)
     {
         Messenger = messenger;
+        _camera = new(0);
     }
 
     [RelayCommand]

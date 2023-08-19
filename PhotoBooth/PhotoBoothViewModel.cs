@@ -7,6 +7,7 @@ using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 
 using PhotoBooth.Audio;
+using PhotoBooth.Cameras;
 using PhotoBooth.Images;
 
 namespace PhotoBooth;
@@ -35,31 +36,18 @@ public partial class PhotoBoothViewModel : ObservableObject
 
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task StartCamera(CancellationToken token)
-    {
+    { 
         try
         {
-            using VideoCapture capture = VideoCapture.FromCamera(1);
-            capture.FrameWidth = 1920;
-            capture.FrameHeight = 1080;
-            using Mat image = new();
+            using Camera camera = new(1);
             while (!token.IsCancellationRequested)
             {
-                capture.Read(image);
-                if (image.Empty())
-                    break;
-
-                if (Image is null)
-                {
-                    Image = image.ToWriteableBitmap();
-                }
-                else
-                {
-                    WriteableBitmapConverter.ToWriteableBitmap(image, Image);
-                }
-                if (Interlocked.CompareExchange(ref _takePicture, 0, 1) == 1)
+                Image = camera.GetImage(Image);
+                
+                if (Interlocked.CompareExchange(ref _takePicture, 0, 1) == 1 && Image is { } image)
                 {
                     AudioPlayer.PlayCameraShutter();
-                    ImageService.SaveImage(image);
+                    ImageService.SaveImage(image.ToMat());
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
                     continue;
                 }
